@@ -67,7 +67,7 @@ class UrlService {
     });
 
     try {
-      // Basic URL validation
+     
       try {
         new URL(request.originalUrl);
       } catch {
@@ -76,7 +76,7 @@ class UrlService {
         return errorResponse;
       }
 
-      // Check custom short code
+   
       let shortCode: string;
       if (request.customShortCode) {
         if (request.customShortCode.length < 3 || request.customShortCode.length > 15) {
@@ -102,12 +102,12 @@ class UrlService {
         shortCode = this.generateUniqueShortCode();
       }
 
-      // Set validity
+     
       const validityMinutes = request.validityMinutes || 30;
       const now = new Date();
       const expiresAt = new Date(now.getTime() + validityMinutes * 60000);
 
-      // Create URL data
+   
       const urlData: UrlData = {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         originalUrl: request.originalUrl,
@@ -119,7 +119,7 @@ class UrlService {
         clicks: []
       };
 
-      // Store
+   
       this.urls.set(urlData.id, urlData);
       this.urlsByShortCode.set(shortCode, urlData.id);
       this.saveToStorage();
@@ -140,7 +140,7 @@ class UrlService {
   }
 
   async getUrlByShortCode(shortCode: string): Promise<UrlData | null> {
-    // Log API call for URL retrieval
+   
     logApiCall(`/api/url/${shortCode}`, 'GET', { shortCode });
     
     try {
@@ -156,7 +156,7 @@ class UrlService {
         return null;
       }
 
-      // Check if expired
+      
       if (new Date() > urlData.expiresAt) {
         logApiResponse(`/api/url/${shortCode}`, 410, { error: 'URL expired' });
         return null;
@@ -174,7 +174,7 @@ class UrlService {
   }
 
   async recordClick(shortCode: string, source: string = 'direct'): Promise<boolean> {
-    // Log click tracking attempt
+ 
     logApiCall(`/api/url/${shortCode}/click`, 'POST', { shortCode, source });
     
     try {
@@ -190,13 +190,13 @@ class UrlService {
         return false;
       }
 
-      // Check if expired
+     
       if (new Date() > urlData.expiresAt) {
         logApiResponse(`/api/url/${shortCode}/click`, 410, { error: 'URL expired' });
         return false;
       }
 
-      // Record click
+      
       const clickData: ClickData = {
         id: Date.now().toString(),
         timestamp: new Date(),
@@ -208,7 +208,7 @@ class UrlService {
       urlData.clicks.push(clickData);
       this.saveToStorage();
       
-      // Log successful click recording
+ 
       logApiResponse(`/api/url/${shortCode}/click`, 200, { 
         clickId: clickData.id,
         totalClicks: urlData.clicks.length 
