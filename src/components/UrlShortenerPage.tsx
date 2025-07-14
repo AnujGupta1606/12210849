@@ -34,7 +34,7 @@ const UrlShortenerPage: React.FC = () => {
     setError('');
     setResult(null);
 
-    // Basic validation
+
     if (!originalUrl.trim()) {
       logUserAction('URL_SHORTENING_FAILED', { reason: 'Empty URL' });
       setError('Please enter a URL');
@@ -51,7 +51,7 @@ const UrlShortenerPage: React.FC = () => {
       return;
     }
 
-    // Create URL
+   
     const response = await urlService.createUrl({
       originalUrl: originalUrl.trim(),
       customShortCode: customShortCode.trim() || undefined,
@@ -64,7 +64,7 @@ const UrlShortenerPage: React.FC = () => {
         expiresAt: response.data.expiresAt 
       });
       setResult(response.data);
-      // Clear form
+    
       setOriginalUrl('');
       setCustomShortCode('');
       setValidityMinutes('');
@@ -80,7 +80,7 @@ const UrlShortenerPage: React.FC = () => {
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text).catch(() => {
-      // Fallback
+      
       const textArea = document.createElement('textarea');
       textArea.value = text;
       document.body.appendChild(textArea);
