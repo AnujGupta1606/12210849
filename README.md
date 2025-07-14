@@ -53,8 +53,5 @@ src/
 └── utils/         # Helper functions
 ```
 
-## Live Demo
-
-🔗 **Try it live**: [URL Shortener App](https://anujgupta1606.github.io/12210849/)
 
 
