@@ -23,7 +23,7 @@ const StatisticsPage: React.FC = () => {
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text).catch(() => {
-      // Fallback
+
       const textArea = document.createElement('textarea');
       textArea.value = text;
       document.body.appendChild(textArea);
@@ -44,7 +44,7 @@ const StatisticsPage: React.FC = () => {
         Statistics
       </Typography>
       
-      {/* Summary */}
+   
       <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
         <Card sx={{ flex: 1, textAlign: 'center' }}>
           <CardContent>
