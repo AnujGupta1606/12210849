@@ -5,7 +5,7 @@ export const copyToClipboard = async (text: string, source: string = 'unknown'):
     // Modern clipboard API (works in HTTPS and secure contexts)
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(text);
-      logger.info(`Text copied to clipboard via Clipboard API`, { text, source }, 'ClipboardUtil');
+      await logger.Log('frontend', 'info', 'utils', `Text copied to clipboard via Clipboard API from ${source}`);
       return true;
     } 
     
@@ -25,14 +25,14 @@ export const copyToClipboard = async (text: string, source: string = 'unknown'):
     document.body.removeChild(textArea);
     
     if (successful) {
-      logger.info(`Text copied to clipboard via fallback method`, { text, source }, 'ClipboardUtil');
+      await logger.Log('frontend', 'info', 'utils', `Text copied to clipboard via fallback method from ${source}`);
       return true;
     } else {
       throw new Error('execCommand copy failed');
     }
     
   } catch (error) {
-    logger.error(`Failed to copy text to clipboard`, { error, text, source }, 'ClipboardUtil');
+    await logger.Log('frontend', 'error', 'utils', `Failed to copy text to clipboard from ${source}: ${error}`);
     return false;
   }
 };

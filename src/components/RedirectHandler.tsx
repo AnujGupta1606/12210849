@@ -18,7 +18,7 @@ const RedirectHandler: React.FC = () => {
         return;
       }
 
-      logger.info('Attempting to redirect', { shortCode }, 'RedirectHandler');
+      logger.Log('frontend', 'info', 'component', `Attempting to redirect to short code: ${shortCode}`);
 
       try {
         // Get URL data
@@ -43,7 +43,7 @@ const RedirectHandler: React.FC = () => {
         setLoading(false);
         
       } catch (error) {
-        logger.error('Failed to handle redirect', error, 'RedirectHandler');
+        logger.Log('frontend', 'error', 'component', `Failed to handle redirect for ${shortCode}: ${error}`);
         setError('An error occurred while processing your request');
         setLoading(false);
       }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -7,6 +7,7 @@ import UrlShortenerPage from './components/UrlShortenerPage';
 import StatisticsPage from './components/StatisticsPage';
 import RedirectHandler from './components/RedirectHandler';
 import Navigation from './components/Navigation';
+import { logger } from './middleware/logger';
 
 const theme = createTheme({
   palette: {
@@ -20,6 +21,12 @@ const theme = createTheme({
 });
 
 function App() {
+  useEffect(() => {
+    logger.Log('frontend', 'info', 'page', 'URL Shortener application started')
+      .then(() => console.log('App startup logged'))
+      .catch(() => console.log('Failed to log app startup'));
+  }, []);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />

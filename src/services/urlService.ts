@@ -1,4 +1,6 @@
 import { UrlData, CreateUrlRequest, CreateUrlResponse, ClickData } from '../types/url.types';
+import { logApiCall, logApiResponse } from '../middleware/logger';
+import { logger } from '../middleware/logger';
 
 class UrlService {
   private urls: Map<string, UrlData> = new Map();
@@ -6,6 +8,7 @@ class UrlService {
 
   constructor() {
     this.loadFromStorage();
+    logger.Log('frontend', 'info', 'service', 'URL Service initialized');
   }
 
   private generateShortCode(): string {
@@ -57,27 +60,41 @@ class UrlService {
   }
 
   async createUrl(request: CreateUrlRequest): Promise<CreateUrlResponse> {
+    logApiCall('/api/url/create', 'POST', { 
+      originalUrl: request.originalUrl.slice(0, 50) + '...', 
+      hasCustomCode: !!request.customShortCode,
+      validityMinutes: request.validityMinutes || 30
+    });
+
     try {
       // Basic URL validation
       try {
         new URL(request.originalUrl);
       } catch {
-        return { success: false, error: 'Invalid URL format' };
+        const errorResponse = { success: false, error: 'Invalid URL format' };
+        logApiResponse('/api/url/create', 400, errorResponse);
+        return errorResponse;
       }
 
       // Check custom short code
       let shortCode: string;
       if (request.customShortCode) {
         if (request.customShortCode.length < 3 || request.customShortCode.length > 15) {
-          return { success: false, error: 'Short code must be 3-15 characters' };
+          const errorResponse = { success: false, error: 'Short code must be 3-15 characters' };
+          logApiResponse('/api/url/create', 400, errorResponse);
+          return errorResponse;
         }
         
         if (!/^[a-zA-Z0-9]+$/.test(request.customShortCode)) {
-          return { success: false, error: 'Short code must be alphanumeric' };
+          const errorResponse = { success: false, error: 'Short code must be alphanumeric' };
+          logApiResponse('/api/url/create', 400, errorResponse);
+          return errorResponse;
         }
         
         if (this.urlsByShortCode.has(request.customShortCode)) {
-          return { success: false, error: 'Short code already exists' };
+          const errorResponse = { success: false, error: 'Short code already exists' };
+          logApiResponse('/api/url/create', 409, errorResponse);
+          return errorResponse;
         }
         
         shortCode = request.customShortCode;
@@ -107,39 +124,77 @@ class UrlService {
       this.urlsByShortCode.set(shortCode, urlData.id);
       this.saveToStorage();
       
+      logger.Log('frontend', 'info', 'service', `URL shortened: ${shortCode}`);
+      
+      logApiResponse('/api/url/create', 201, { 
+        shortCode: urlData.shortCode, 
+        expiresAt: urlData.expiresAt 
+      });
+      
       return { success: true, data: urlData };
     } catch (error) {
-      return { success: false, error: 'Failed to create short URL' };
+      const errorResponse = { success: false, error: 'Failed to create short URL' };
+      logApiResponse('/api/url/create', 500, { error });
+      return errorResponse;
     }
   }
 
   async getUrlByShortCode(shortCode: string): Promise<UrlData | null> {
+    // Log API call for URL retrieval
+    logApiCall(`/api/url/${shortCode}`, 'GET', { shortCode });
+    
     try {
       const urlId = this.urlsByShortCode.get(shortCode);
-      if (!urlId) return null;
+      if (!urlId) {
+        logApiResponse(`/api/url/${shortCode}`, 404, { error: 'URL not found' });
+        return null;
+      }
 
       const urlData = this.urls.get(urlId);
-      if (!urlData) return null;
+      if (!urlData) {
+        logApiResponse(`/api/url/${shortCode}`, 404, { error: 'URL data not found' });
+        return null;
+      }
 
       // Check if expired
-      if (new Date() > urlData.expiresAt) return null;
+      if (new Date() > urlData.expiresAt) {
+        logApiResponse(`/api/url/${shortCode}`, 410, { error: 'URL expired' });
+        return null;
+      }
 
+      logApiResponse(`/api/url/${shortCode}`, 200, { 
+        shortCode: urlData.shortCode,
+        originalUrl: urlData.originalUrl.slice(0, 50) + '...'
+      });
       return urlData;
     } catch (error) {
+      logApiResponse(`/api/url/${shortCode}`, 500, { error });
       return null;
     }
   }
 
   async recordClick(shortCode: string, source: string = 'direct'): Promise<boolean> {
+    // Log click tracking attempt
+    logApiCall(`/api/url/${shortCode}/click`, 'POST', { shortCode, source });
+    
     try {
       const urlId = this.urlsByShortCode.get(shortCode);
-      if (!urlId) return false;
+      if (!urlId) {
+        logApiResponse(`/api/url/${shortCode}/click`, 404, { error: 'URL not found' });
+        return false;
+      }
 
       const urlData = this.urls.get(urlId);
-      if (!urlData) return false;
+      if (!urlData) {
+        logApiResponse(`/api/url/${shortCode}/click`, 404, { error: 'URL data not found' });
+        return false;
+      }
 
       // Check if expired
-      if (new Date() > urlData.expiresAt) return false;
+      if (new Date() > urlData.expiresAt) {
+        logApiResponse(`/api/url/${shortCode}/click`, 410, { error: 'URL expired' });
+        return false;
+      }
 
       // Record click
       const clickData: ClickData = {
@@ -153,8 +208,15 @@ class UrlService {
       urlData.clicks.push(clickData);
       this.saveToStorage();
       
+      // Log successful click recording
+      logApiResponse(`/api/url/${shortCode}/click`, 200, { 
+        clickId: clickData.id,
+        totalClicks: urlData.clicks.length 
+      });
+      
       return true;
     } catch (error) {
+      logApiResponse(`/api/url/${shortCode}/click`, 500, { error });
       return false;
     }
   }

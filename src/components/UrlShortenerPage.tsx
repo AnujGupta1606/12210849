@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import { urlService } from '../services/urlService';
 import { UrlData } from '../types/url.types';
+import { logUserAction } from '../middleware/logger';
 
 const UrlShortenerPage: React.FC = () => {
   const [originalUrl, setOriginalUrl] = useState('');
@@ -23,12 +24,19 @@ const UrlShortenerPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
+    logUserAction('URL_SHORTENING_ATTEMPT', { 
+      originalUrl: originalUrl.slice(0, 50) + '...', 
+      hasCustomCode: !!customShortCode.trim(),
+      validityMinutes: validityMinutes ? parseInt(validityMinutes) : 30
+    });
+
     setLoading(true);
     setError('');
     setResult(null);
 
     // Basic validation
     if (!originalUrl.trim()) {
+      logUserAction('URL_SHORTENING_FAILED', { reason: 'Empty URL' });
       setError('Please enter a URL');
       setLoading(false);
       return;
@@ -37,6 +45,7 @@ const UrlShortenerPage: React.FC = () => {
     try {
       new URL(originalUrl);
     } catch {
+      logUserAction('URL_SHORTENING_FAILED', { reason: 'Invalid URL format' });
       setError('Please enter a valid URL');
       setLoading(false);
       return;
@@ -50,12 +59,19 @@ const UrlShortenerPage: React.FC = () => {
     });
 
     if (response.success && response.data) {
+      logUserAction('URL_SHORTENING_SUCCESS', { 
+        shortCode: response.data.shortCode,
+        expiresAt: response.data.expiresAt 
+      });
       setResult(response.data);
       // Clear form
       setOriginalUrl('');
       setCustomShortCode('');
       setValidityMinutes('');
     } else {
+      logUserAction('URL_SHORTENING_FAILED', { 
+        reason: response.error || 'Unknown error' 
+      });
       setError(response.error || 'Failed to create short URL');
     }
 
