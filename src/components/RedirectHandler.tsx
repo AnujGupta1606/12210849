@@ -21,7 +21,7 @@ const RedirectHandler: React.FC = () => {
       logger.Log('frontend', 'info', 'component', `Attempting to redirect to short code: ${shortCode}`);
 
       try {
-        // Get URL data
+
         const urlData = await urlService.getUrlByShortCode(shortCode);
         
         if (!urlData) {
@@ -30,12 +30,10 @@ const RedirectHandler: React.FC = () => {
           return;
         }
 
-        // Record the click
         await urlService.recordClick(shortCode, 'direct');
         
         setRedirectUrl(urlData.originalUrl);
-        
-        // Redirect after a short delay to show the user what's happening
+     
         setTimeout(() => {
           window.location.href = urlData.originalUrl;
         }, 2000);
