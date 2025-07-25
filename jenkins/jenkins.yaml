@@ -1,0 +1,87 @@
+# Jenkins Configuration as Code (JCasC)
+
+jenkins:
+  systemMessage: "DevOps URL Shortener - Jenkins Automation Server"
+  
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "admin123"
+          
+  authorizationStrategy:
+    globalMatrix:
+      permissions:
+        - "Overall/Administer:admin"
+        - "Overall/Read:authenticated"
+
+  nodes:
+    - permanent:
+        name: "docker-agent"
+        remoteFS: "/home/jenkins"
+        launcher:
+          inbound:
+            webSocket: true
+
+tool:
+  git:
+    installations:
+      - name: "Default"
+        home: "/usr/bin/git"
+        
+  nodejs:
+    installations:
+      - name: "NodeJS-18"
+        home: "/usr/local/node"
+        
+  dockerTool:
+    installations:
+      - name: "Docker"
+        home: "/usr/bin/docker"
+
+jobs:
+  - script: |
+      pipelineJob('url-shortener-pipeline') {
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote {
+                  url('https://github.com/AnujGupta1606/12210849.git')
+                }
+                branch('*/main')
+              }
+            }
+            scriptPath('Jenkinsfile')
+          }
+        }
+        triggers {
+          githubPush()
+        }
+      }
+      
+  - script: |
+      pipelineJob('security-scan-pipeline') {
+        definition {
+          cps {
+            script('''
+              pipeline {
+                agent any
+                stages {
+                  stage('Security Scan') {
+                    steps {
+                      script {
+                        sh 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image url-shortener:latest'
+                      }
+                    }
+                  }
+                }
+              }
+            ''')
+          }
+        }
+        triggers {
+          cron('H 2 * * *')  // Daily at 2 AM
+        }
+      }
