@@ -5,10 +5,12 @@ A simple React application for shortening URLs with custom codes and analytics.
 ## Screenshots
 
 ### Main Interface
-![URL Shortener Interface](./screenshots/main-interface.png)
+<img width="1914" height="908" alt="Screenshot 2025-07-14 112129" src="https://github.com/user-attachments/assets/0a799cda-20f8-4eca-b4ef-e27315baa91c" />
+
 
 ### Statistics Dashboard
-![Statistics Dashboard](./screenshots/statistics.png)
+
+<img width="1891" height="896" alt="Screenshot 2025-07-14 112202" src="https://github.com/user-attachments/assets/84e0b762-b4d9-42a8-bc18-73d4b8ee68f1" />
 
 ## Features
 
@@ -51,15 +53,5 @@ src/
 └── utils/         # Helper functions
 ```
 
-## Live Demo
 
-🔗 **Try it live**: [URL Shortener App](https://anujgupta1606.github.io/12210849/)
 
-## Preview
-
-| Feature | Preview |
-|---------|---------|
-| URL Shortening | Clean and simple interface for creating short URLs |
-| Custom Codes | Option to create personalized short codes |
-| Analytics | Track clicks and manage your URLs |
-| Responsive | Works perfectly on desktop and mobile |
