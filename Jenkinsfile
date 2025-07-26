@@ -106,6 +106,16 @@ pipeline {
                 }
             }
         }
+        stage('Nginx Status Health Check') {
+    steps {
+        script {
+            echo "Checking Nginx status endpoint..."
+            sh '''
+                curl -f http://localhost:3000/nginx_status || exit 1
+            '''
+        }
+    }
+}
         
         stage('🧪 Health Checks & Validation') {
             steps {
