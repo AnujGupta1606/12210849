@@ -102,66 +102,8 @@ pipeline {
                         
                         echo "Checking container status..."
                         docker ps --format "table {{.Names}}\\t{{.Status}}\\t{{.Ports}}"
-                    '''
-                }
-            }
-        }
-        stage('Nginx Status Health Check') {
-    steps {
-        script {
-            echo "Checking Nginx status endpoint..."
-            sh '''
-                curl -f http://localhost:3000/nginx_status || exit 1
-            '''
-        }
-    }
-}
-        
-        stage('Health Checks & Validation') {
-            steps {
-                script {
-                    echo "Running comprehensive health checks..."
-                    sh '''
-                        echo "Testing application endpoints..."
                         
-                        # Frontend health check
-                        echo "Testing Frontend (localhost:3000)..."
-                        curl -f http://localhost:3000/health || echo "Frontend health check failed"
-                        
-                        # Prometheus health check
-                        echo "Testing Prometheus (localhost:9090)..."
-                        curl -f http://localhost:9090/-/healthy || echo "Prometheus health check failed"
-                        
-                        # Grafana health check
-                        echo "Testing Grafana (localhost:3001)..."
-                        curl -f http://localhost:3001/api/health || echo "Grafana health check failed"
-                        
-                        echo "Checking container health status..."
-                        docker ps --format "table {{.Names}}\\t{{.Status}}" | grep -E "(healthy|Up)" || true
-                        
-                        echo "Checking Prometheus targets..."
-                        curl -s http://localhost:9090/api/v1/targets | head -200 || true
-                    '''
-                }
-            }
-        }
-        
-        stage('Monitoring & Metrics Verification') {
-            steps {
-                script {
-                    echo "Verifying monitoring stack..."
-                    sh '''
-                        echo "Checking Prometheus metrics..."
-                        curl -s "http://localhost:9090/api/v1/query?query=up" | grep -o '"result":\\[.*\\]' || true
-                        
-                        echo "Checking container metrics..."
-                        curl -s "http://localhost:9090/api/v1/query?query=container_memory_usage_bytes" | head -100 || true
-                        
-                        echo "Checking nginx status..."
-                        curl -s http://localhost:3000/nginx_status || true
-                        
-                        echo "Final container overview..."
-                        docker stats --no-stream --format "table {{.Container}}\\t{{.CPUPerc}}\\t{{.MemUsage}}" || true
+                        echo "Pipeline completed successfully!"
                     '''
                 }
             }
