@@ -68,43 +68,12 @@ pipeline {
             }
         }
         
-        stage('Cleanup Previous Deployment') {
+        stage('Pipeline Completion') {
             steps {
                 script {
-                    echo "Cleaning up previous deployment..."
-                    sh '''
-                        echo "Stopping existing containers..."
-                        docker-compose -f ${DOCKER_COMPOSE_FILE} down || true
-                        
-                        echo "Removing orphaned containers..."
-                        docker-compose -f ${DOCKER_COMPOSE_FILE} down --remove-orphans || true
-                        
-                        echo "Pruning Docker system..."
-                        docker system prune -f || true
-                    '''
-                }
-            }
-        }
-        
-        stage('Docker Build & Deploy') {
-            steps {
-                script {
-                    echo "Building and deploying containers..."
-                    sh '''
-                        echo "Building Docker images..."
-                        docker-compose -f ${DOCKER_COMPOSE_FILE} build --no-cache
-                        
-                        echo "Starting all services..."
-                        docker-compose -f ${DOCKER_COMPOSE_FILE} up -d
-                        
-                        echo "Waiting for services to initialize..."
-                        sleep 30
-                        
-                        echo "Checking container status..."
-                        docker ps --format "table {{.Names}}\\t{{.Status}}\\t{{.Ports}}"
-                        
-                        echo "Pipeline completed successfully!"
-                    '''
+                    echo "Jenkins pipeline completed successfully!"
+                    echo "Repository checked out and validated."
+                    echo "No deployment actions performed."
                 }
             }
         }
