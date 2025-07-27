@@ -6,9 +6,6 @@
 .pnp.js
 backend/node_modules/
 
-# testing
-/coverage
-
 # production
 /build
 
@@ -23,10 +20,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# IDE settings
+.vscode/
+.idea/
+
 # DevOps files to keep in repo
 !docker-compose*.yml
-!Dockerfile
 !Jenkinsfile
 !nginx.conf
 !monitoring/
-!security/

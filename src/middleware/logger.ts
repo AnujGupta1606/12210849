@@ -57,10 +57,10 @@ class Logger {
 
       logEntry.logID = response.logID;
       logEntry.status = 'success';
-      console.log(`✅ Log sent successfully - ID: ${response.logID}`);
+      console.log(`Log sent successfully - ID: ${response.logID}`);
     } catch (error) {
       logEntry.status = 'failed';
-      console.error('❌ Failed to send log to server:', error);
+      console.error('Failed to send log to server:', error);
       this.logToConsole('error', `Failed to send log to server: ${message}`);
     }
   }

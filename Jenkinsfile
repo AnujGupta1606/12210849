@@ -14,64 +14,64 @@ pipeline {
     }
     
     stages {
-        stage('🔍 Checkout & Info') {
+        stage('Checkout & Info') {
             steps {
                 script {
-                    echo "🚀 Starting URL Shortener DevOps Pipeline"
-                    echo "📊 Build Number: ${BUILD_NUMBER}"
-                    echo "🌿 Branch: main"
-                    echo "🕒 Build Time: ${new Date()}"
-                    echo "📁 Workspace: ${WORKSPACE}"
+                    echo "Starting URL Shortener DevOps Pipeline"
+                    echo "Build Number: ${BUILD_NUMBER}"
+                    echo "Branch: main"
+                    echo "Build Time: ${new Date()}"
+                    echo "Workspace: ${WORKSPACE}"
                 }
                 
                 // Clone repository
                 git branch: 'main', url: "${GIT_REPO}"
                 
                 script {
-                    echo "📝 Repository cloned successfully"
+                    echo "Repository cloned successfully"
                     sh 'ls -la'
                 }
             }
         }
         
-        stage('🔒 Security & Environment Check') {
+        stage('Security & Environment Check') {
             steps {
                 script {
-                    echo "🛡️ Running security and environment checks..."
+                    echo "Running security and environment checks..."
                     
                     // Check Docker availability
                     sh '''
-                        echo "🐳 Checking Docker..."
+                        echo "Checking Docker..."
                         docker --version
                         docker info | head -10
                         
-                        echo "📋 Checking Docker Compose..."
+                        echo "Checking Docker Compose..."
                         docker-compose --version
                         
-                        echo "🔍 Checking project structure..."
+                        echo "Checking project structure..."
                         ls -la
                         
-                        echo "📄 Verifying key files..."
+                        echo "Verifying key files..."
                         if [ -f docker-compose.monitoring.yml ]; then
-                            echo "✅ Docker Compose file found"
+                            echo "Docker Compose file found"
                         else
-                            echo "❌ Docker Compose file missing"
+                            echo "Docker Compose file missing"
                         fi
                         
                         if [ -f nginx.conf ]; then
-                            echo "✅ Nginx config found"
+                            echo "Nginx config found"
                         else
-                            echo "❌ Nginx config missing"
+                            echo "Nginx config missing"
                         fi
                     '''
                 }
             }
         }
         
-        stage('🧹 Cleanup Previous Deployment') {
+        stage('Cleanup Previous Deployment') {
             steps {
                 script {
-                    echo "🧹 Cleaning up previous deployment..."
+                    echo "Cleaning up previous deployment..."
                     sh '''
                         echo "Stopping existing containers..."
                         docker-compose -f ${DOCKER_COMPOSE_FILE} down || true
@@ -86,21 +86,21 @@ pipeline {
             }
         }
         
-        stage('🐳 Docker Build & Deploy') {
+        stage('Docker Build & Deploy') {
             steps {
                 script {
-                    echo "🐳 Building and deploying containers..."
+                    echo "Building and deploying containers..."
                     sh '''
-                        echo "🔨 Building Docker images..."
+                        echo "Building Docker images..."
                         docker-compose -f ${DOCKER_COMPOSE_FILE} build --no-cache
                         
-                        echo "🚀 Starting all services..."
+                        echo "Starting all services..."
                         docker-compose -f ${DOCKER_COMPOSE_FILE} up -d
                         
-                        echo "⏳ Waiting for services to initialize..."
+                        echo "Waiting for services to initialize..."
                         sleep 30
                         
-                        echo "📊 Checking container status..."
+                        echo "Checking container status..."
                         docker ps --format "table {{.Names}}\\t{{.Status}}\\t{{.Ports}}"
                     '''
                 }
@@ -117,12 +117,12 @@ pipeline {
     }
 }
         
-        stage('🧪 Health Checks & Validation') {
+        stage('Health Checks & Validation') {
             steps {
                 script {
-                    echo "🧪 Running comprehensive health checks..."
+                    echo "Running comprehensive health checks..."
                     sh '''
-                        echo "🔍 Testing application endpoints..."
+                        echo "Testing application endpoints..."
                         
                         # Frontend health check
                         echo "Testing Frontend (localhost:3000)..."
@@ -136,31 +136,31 @@ pipeline {
                         echo "Testing Grafana (localhost:3001)..."
                         curl -f http://localhost:3001/api/health || echo "Grafana health check failed"
                         
-                        echo "📊 Checking container health status..."
+                        echo "Checking container health status..."
                         docker ps --format "table {{.Names}}\\t{{.Status}}" | grep -E "(healthy|Up)" || true
                         
-                        echo "🔍 Checking Prometheus targets..."
+                        echo "Checking Prometheus targets..."
                         curl -s http://localhost:9090/api/v1/targets | head -200 || true
                     '''
                 }
             }
         }
         
-        stage('📊 Monitoring & Metrics Verification') {
+        stage('Monitoring & Metrics Verification') {
             steps {
                 script {
-                    echo "📊 Verifying monitoring stack..."
+                    echo "Verifying monitoring stack..."
                     sh '''
-                        echo "🔍 Checking Prometheus metrics..."
+                        echo "Checking Prometheus metrics..."
                         curl -s "http://localhost:9090/api/v1/query?query=up" | grep -o '"result":\\[.*\\]' || true
                         
-                        echo "📈 Checking container metrics..."
+                        echo "Checking container metrics..."
                         curl -s "http://localhost:9090/api/v1/query?query=container_memory_usage_bytes" | head -100 || true
                         
-                        echo "🌐 Checking nginx status..."
+                        echo "Checking nginx status..."
                         curl -s http://localhost:3000/nginx_status || true
                         
-                        echo "📊 Final container overview..."
+                        echo "Final container overview..."
                         docker stats --no-stream --format "table {{.Container}}\\t{{.CPUPerc}}\\t{{.MemUsage}}" || true
                     '''
                 }
@@ -171,12 +171,12 @@ pipeline {
     post {
         always {
             script {
-                echo "🧹 Pipeline cleanup..."
+                echo "Pipeline cleanup..."
                 sh '''
-                    echo "📊 Final system overview..."
+                    echo "Final system overview..."
                     docker ps --format "table {{.Names}}\\t{{.Status}}\\t{{.Ports}}" || true
                     
-                    echo "💾 Disk usage check..."
+                    echo "Disk usage check..."
                     df -h || true
                 '''
             }
@@ -184,32 +184,32 @@ pipeline {
         
         success {
             script {
-                echo "✅ ===== PIPELINE SUCCESS ====="
-                echo "🎉 URL Shortener DevOps Pipeline completed successfully!"
+                echo "===== PIPELINE SUCCESS ====="
+                echo "URL Shortener DevOps Pipeline completed successfully!"
                 echo ""
-                echo "🔗 Access URLs:"
-                echo "   📱 Application:  http://localhost:3000"
-                echo "   📊 Grafana:      http://localhost:3001 (admin/admin123)"
-                echo "   📈 Prometheus:   http://localhost:9090"
-                echo "   🔧 Jenkins:      http://localhost:8081"
+                echo "Access URLs:"
+                echo "   Application:  http://localhost:3000"
+                echo "   Grafana:      http://localhost:3001 (admin/admin123)"
+                echo "   Prometheus:   http://localhost:9090"
+                echo "   Jenkins:      http://localhost:8081"
                 echo ""
-                echo "🚀 All services are running and monitored!"
+                echo "All services are running and monitored!"
                 echo "=============================="
             }
         }
         
         failure {
             script {
-                echo "❌ ===== PIPELINE FAILED ====="
-                echo "🔍 Checking container logs for debugging..."
+                echo "===== PIPELINE FAILED ====="
+                echo "Checking container logs for debugging..."
                 sh '''
-                    echo "📋 Container status:"
+                    echo "Container status:"
                     docker ps -a || true
                     
-                    echo "📄 Recent container logs:"
+                    echo "Recent container logs:"
                     docker-compose -f ${DOCKER_COMPOSE_FILE} logs --tail=20 || true
                     
-                    echo "🔧 System resources:"
+                    echo "System resources:"
                     free -h || true
                     df -h || true
                 '''
@@ -218,7 +218,7 @@ pipeline {
         }
         
         unstable {
-            echo "⚠️ Pipeline completed with warnings - check logs for details"
+            echo "Pipeline completed with warnings - check logs for details"
         }
     }
 }
